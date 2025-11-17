@@ -1,40 +1,39 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
- 
-export default function Login() {
+
+export default function Cadastro() {
   const navigate = useNavigate();
- 
+
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
- 
+
   const [errors, setErrors] = useState({ nome: "", email: "", senha: "" });
   const [signingUp, setSigningUp] = useState(false);
   const [serverError, setServerError] = useState("");
   const [serverMessage, setServerMessage] = useState("");
- 
+
   function validarCampos() {
     const next = { nome: "", email: "", senha: "" };
     let ok = true;
- 
+
     if (!nome.trim()) {
       next.nome = "Por favor, informe seu nome.";
       ok = false;
     }
- 
+
     if (!email.trim()) {
       next.email = "Por favor, informe seu e-mail.";
       ok = false;
     } else {
-      // validação simples de e-mail
       const re = /^\S+@\S+\.\S+$/;
       if (!re.test(email)) {
         next.email = "E-mail inválido.";
         ok = false;
       }
     }
- 
+
     if (!senha) {
       next.senha = "Por favor, informe uma senha.";
       ok = false;
@@ -42,36 +41,56 @@ export default function Login() {
       next.senha = "A senha deve ter ao menos 6 caracteres.";
       ok = false;
     }
- 
+
     setErrors(next);
     return ok;
   }
- 
+
   const handleCriarConta = async () => {
     if (!validarCampos()) return;
- 
+
     setSigningUp(true);
     setServerError("");
     setServerMessage("");
- 
+
     try {
-      // Supabase JS v2: signUp signature uses options for additional user metadata
-      const { data, error } = await supabase.auth.signUp({ email, password: senha, options: { data: { nome } } });
- 
-      if (error) {
-        const msg = error.message || JSON.stringify(error);
-        setServerError(msg);
-        console.error("Erro ao criar conta:", error);
+      // 1️⃣ Cria usuário no Supabase Auth
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: senha
+      });
+
+      if (signUpError) {
+        setServerError(signUpError.message);
+        console.error("Erro ao criar conta:", signUpError);
         setSigningUp(false);
         return;
       }
- 
-      // sucesso
-      setServerMessage("Cadastro realizado. Verifique seu e-mail para confirmar (se aplicável).");
-      console.log("SignUp result:", data);
- 
-      // Navegar após curto delay para mostrar a mensagem (ou direto se preferir)
-      setTimeout(() => navigate("/HomeLogado"), 800);
+
+      // 2️⃣ Insere ou atualiza perfil na tabela 'perfil'
+      if (signUpData.user) {
+        const { data: perfilData, error: perfilError } = await supabase
+          .from("perfil")
+          .upsert(
+            [{ id_user: signUpData.user.id, nome }],
+            { onConflict: "id_user" } // evita erro de chave primária duplicada
+          );
+
+        if (perfilError) {
+          setServerError("Erro ao salvar perfil: " + perfilError.message);
+          console.error("Erro ao salvar perfil:", perfilError);
+          setSigningUp(false);
+          return;
+        }
+
+        console.log("Perfil criado ou atualizado com sucesso:", perfilData);
+      }
+
+      setServerMessage("Cadastro realizado! Verifique seu e-mail para confirmar (se aplicável).");
+
+      // 3️⃣ Redireciona para login após 1s
+      setTimeout(() => navigate("/Login"), 1000);
+
     } catch (err) {
       console.error("Erro inesperado no handleCriarConta:", err);
       setServerError(err.message || String(err));
@@ -79,23 +98,19 @@ export default function Login() {
       setSigningUp(false);
     }
   };
- 
-  const handleEntrarConta = () => {
-    console.log("Entrar na conta:", { email, senha });
-    navigate("/Login");
-  };
- 
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-900">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm text-center">
         <img
-          src="./src/assets/sescsenac.png" // Substitua pelo caminho da logo Sesc/Senac
+          src="./src/assets/sescsenac.png"
           alt="Sesc Senac"
           className="mx-auto mb-6"
         />
         <h1 className="text-xl font-medium mb-6 text-blue-900">
           Lanchonete Sesc Senac
         </h1>
+
         <div className="flex flex-col gap-2">
           <div>
             <input
@@ -107,7 +122,7 @@ export default function Login() {
             />
             {errors.nome && <p className="text-xs text-red-600 mt-1">{errors.nome}</p>}
           </div>
- 
+
           <div>
             <input
               type="email"
@@ -118,7 +133,7 @@ export default function Login() {
             />
             {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
           </div>
- 
+
           <div>
             <input
               type="password"
@@ -130,7 +145,7 @@ export default function Login() {
             {errors.senha && <p className="text-xs text-red-600 mt-1">{errors.senha}</p>}
           </div>
         </div>
- 
+
         <div className="flex gap-4 mt-6">
           <button
             onClick={handleCriarConta}
@@ -139,15 +154,8 @@ export default function Login() {
           >
             {signingUp ? 'Cadastrando...' : 'Criar conta'}
           </button>
- 
-          <button
-            onClick={handleEntrarConta}
-            className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-full font-semibold"
-          >
-            Entrar na conta
-          </button>
         </div>
- 
+
         {serverError && <p className="text-sm text-red-600 mt-3">{serverError}</p>}
         {serverMessage && <p className="text-sm text-green-600 mt-3">{serverMessage}</p>}
       </div>

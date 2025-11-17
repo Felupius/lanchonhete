@@ -41,7 +41,6 @@ export default function Login() {
 
     setSigningIn(true);
     try {
-      // Supabase JS v2: use signInWithPassword
       const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
 
       if (error) {
@@ -51,9 +50,8 @@ export default function Login() {
         return;
       }
 
-      // sucesso
       console.log("Login bem sucedido:", data);
-      navigate("/HomeLogado");
+      navigate("/");
     } catch (err) {
       console.error("Erro inesperado no login:", err);
       setServerError(err.message || String(err));
@@ -106,13 +104,6 @@ export default function Login() {
         </div>
 
         <div className="flex gap-4 mt-6">
-          <button
-            onClick={handleCriarConta}
-            className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black py-2 rounded-full font-semibold"
-          >
-            Criar conta
-          </button>
-
           <button
             onClick={handleEntrarConta}
             disabled={signingIn}
