@@ -13,6 +13,8 @@ export default function App() {
   const [filtro, setFiltro] = useState("todos");
   const [menuAberto, setMenuAberto] = useState(false);
 
+  const [quantidadeCarrinho, setQuantidadeCarrinho] = useState(0);
+
   const categorias = ["todos", "doce", "salgado", "bebida"];
 
   useEffect(() => {
@@ -33,10 +35,17 @@ export default function App() {
         } else {
           setUsuario({ ...user, nome: perfilData.nome });
         }
+
+        const chaveUsuario = `produtos_local_${user.id}`;
+        const lista = JSON.parse(localStorage.getItem(chaveUsuario)) || [];
+        setQuantidadeCarrinho(lista.length);
+
       } else {
         setUsuario(null);
+        setQuantidadeCarrinho(0);
       }
     }
+
     verificarLogin();
     carregarProdutos("todos");
   }, []);
@@ -51,60 +60,20 @@ export default function App() {
     if (!error) setProdutos(data || []);
     setCarregando(false);
   }
+
   const [saindo, setSaindo] = useState(false);
 
   async function handleSair() {
     setSaindo(true);
-
     const { error } = await supabase.auth.signOut();
-
     setSaindo(false);
 
-    if (error) {
-      console.error("Erro ao sair:", error.message);
-    } else {
+    if (!error) {
       setUsuario(null);
+      setQuantidadeCarrinho(0);
     }
   }
 
-  async function salvarProdutoLocal(produto) {
-    try {
-      const { data } = await supabase.auth.getUser();
-      const user = data?.user ?? null;
-
-      if (!user) {
-        alert("Você precisa estar logado para comprar produtos!");
-        return;
-      }
-
-      const chaveUsuario = `produtos_local_${user.id}`;
-      const json = localStorage.getItem(chaveUsuario);
-      const listaAtual = json ? JSON.parse(json) : [];
-
-      // Verifica se o produto já existe
-      const jaExiste = listaAtual.some(item => item.id_produto === produto.id_produto);
-      if (jaExiste) {
-        alert("Você já adicionou este produto. Altere a quantidade no carrinho.");
-        return;
-      }
-
-      // Adiciona produto
-      const novoProduto = {
-        id_produto: produto.id_produto,
-        nome_produto: produto.nome_produto,
-        preco: produto.preco,
-        quantidade: 1,
-        image: produto.image,
-      };
-      const novaLista = [...listaAtual, novoProduto];
-      localStorage.setItem(chaveUsuario, JSON.stringify(novaLista));
-
-      alert("Produto adicionado ao carrinho!");
-    } catch (e) {
-      console.error("Erro ao salvar produto:", e);
-      alert("Não foi possível salvar o produto.");
-    }
-  }
   const adicionarAoCarrinho = (produto) => {
     if (!usuario) {
       alert("Você precisa estar logado para comprar produtos!");
@@ -131,13 +100,15 @@ export default function App() {
 
     const novaLista = [...listaAtual, produtoArray];
     localStorage.setItem(chaveUsuario, JSON.stringify(novaLista));
+
+    setQuantidadeCarrinho(novaLista.length);
+
     alert("Produto adicionado ao carrinho!");
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-yellow-50 flex flex-col">
-      <Header usuario={usuario} handleSair={handleSair} />
+      <Header usuario={usuario} handleSair={handleSair} quantidadeCarrinho={quantidadeCarrinho} />
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -150,19 +121,15 @@ export default function App() {
           </h2>
         </div>
       </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
         className="flex justify-center mt-6"
       >
-        <button
-          onClick={() => navigate("/contato")}
-          className="bg-gradient-to-r from-[#80BBFF] to-[#004C99] text-white px-8 py-3 rounded-2xl font-bold shadow-lg transform hover:scale-105 hover:shadow-2xl transition duration-300"
-        >
-          Fale Conosco
-        </button>
       </motion.div>
+
       <motion.h1
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -171,6 +138,7 @@ export default function App() {
       >
         MENU DE PRODUTOS
       </motion.h1>
+
       <div className="flex justify-center flex-wrap gap-3 mt-6 overflow-x-auto px-4 scrollbar-hide">
         {categorias.map((tipo) => (
           <button
@@ -180,15 +148,16 @@ export default function App() {
               carregarProdutos(tipo);
             }}
             className={`px-5 py-2 border rounded-full font-bold transition-all whitespace-nowrap
-        ${filtro === tipo
-                ? "bg-yellow-400 text-white border-yellow-600"
-                : "bg-white text-black border-yellow-400 hover:bg-yellow-100"
-              }`}
+            ${filtro === tipo
+              ? "bg-yellow-400 text-white border-yellow-600"
+              : "bg-white text-black border-yellow-400 hover:bg-yellow-100"
+            }`}
           >
             {tipo.toUpperCase()}
           </button>
         ))}
       </div>
+
       {!carregando && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6 mt-8 pb-20 max-w-6xl mx-auto">
           {produtos.map((p, index) => (
@@ -209,6 +178,7 @@ export default function App() {
               <p className="text-[#002D85] text-xl md:text-2xl font-bold">
                 R$ {Number(p.preco).toFixed(2)}
               </p>
+
               <button
                 onClick={() => adicionarAoCarrinho(p)}
                 className="bg-white rounded-full py-2 px-6 font-bold text-black shadow-md w-full hover:bg-yellow-100 transition-colors"
@@ -223,7 +193,9 @@ export default function App() {
           ))}
         </div>
       )}
-      <Footer/>
+
+      <Footer />
+
     </div>
   );
 }
