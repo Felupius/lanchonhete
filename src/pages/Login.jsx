@@ -65,20 +65,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-900">
+    <div className="min-h-screen flex items-center justify-center bg-[#004C99]">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm text-center">
-        {/* Logo */}
         <img
-          src="./src/assets/sescsenac.png" // substitua pelo caminho correto da logo Sesc/Senac
+          src="./src/assets/sescsenac.png"
           alt="Sesc Senac"
           className="mx-auto mb-6"
         />
-
-        <h1 className="text-xl font-medium mb-6 text-blue-900">
+        <h1 className="text-xl font-medium mb-6 text-[#004C99]">
           Lanchonete Sesc Senac
         </h1>
-
-        {/* Campos */}
         <div className="flex flex-col gap-3">
           <div>
             <input
@@ -107,7 +103,7 @@ export default function Login() {
           <button
             onClick={handleEntrarConta}
             disabled={signingIn}
-            className={`flex-1 ${signingIn ? 'bg-yellow-300' : 'bg-yellow-400 hover:bg-yellow-500'} text-black py-2 rounded-full font-semibold`}
+            className={`flex-1 ${signingIn ? 'bg-yellow-300' : 'bg-[#F6BE00] hover:bg-yellow-500'} text-black py-2 rounded-full font-semibold`}
           >
             {signingIn ? 'Entrando...' : 'Entrar na conta'}
           </button>

@@ -48,13 +48,10 @@ export default function Cadastro() {
 
   const handleCriarConta = async () => {
     if (!validarCampos()) return;
-
     setSigningUp(true);
     setServerError("");
     setServerMessage("");
-
     try {
-      // 1️⃣ Cria usuário no Supabase Auth
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password: senha
@@ -67,15 +64,13 @@ export default function Cadastro() {
         return;
       }
 
-      // 2️⃣ Insere ou atualiza perfil na tabela 'perfil'
       if (signUpData.user) {
         const { data: perfilData, error: perfilError } = await supabase
           .from("perfil")
           .upsert(
             [{ id_user: signUpData.user.id, nome }],
-            { onConflict: "id_user" } // evita erro de chave primária duplicada
+            { onConflict: "id_user" }
           );
-
         if (perfilError) {
           setServerError("Erro ao salvar perfil: " + perfilError.message);
           console.error("Erro ao salvar perfil:", perfilError);
@@ -88,7 +83,6 @@ export default function Cadastro() {
 
       setServerMessage("Cadastro realizado! Verifique seu e-mail para confirmar (se aplicável).");
 
-      // 3️⃣ Redireciona para login após 1s
       setTimeout(() => navigate("/Login"), 1000);
 
     } catch (err) {
@@ -100,17 +94,16 @@ export default function Cadastro() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-900">
+    <div className="min-h-screen flex items-center justify-center bg-[#004C99]">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm text-center">
         <img
           src="./src/assets/sescsenac.png"
           alt="Sesc Senac"
           className="mx-auto mb-6"
         />
-        <h1 className="text-xl font-medium mb-6 text-blue-900">
+        <h1 className="text-xl font-medium mb-6 text-[#004C99]">
           Lanchonete Sesc Senac
         </h1>
-
         <div className="flex flex-col gap-2">
           <div>
             <input
@@ -122,7 +115,6 @@ export default function Cadastro() {
             />
             {errors.nome && <p className="text-xs text-red-600 mt-1">{errors.nome}</p>}
           </div>
-
           <div>
             <input
               type="email"
@@ -133,7 +125,6 @@ export default function Cadastro() {
             />
             {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
           </div>
-
           <div>
             <input
               type="password"
@@ -145,17 +136,15 @@ export default function Cadastro() {
             {errors.senha && <p className="text-xs text-red-600 mt-1">{errors.senha}</p>}
           </div>
         </div>
-
         <div className="flex gap-4 mt-6">
           <button
             onClick={handleCriarConta}
             disabled={signingUp}
-            className={`flex-1 ${signingUp ? 'bg-yellow-300' : 'bg-yellow-400 hover:bg-yellow-500'} text-black py-2 rounded-full font-semibold`}
+            className={`flex-1 ${signingUp ? 'bg-yellow-300' : 'bg-[#F6BE00] hover:bg-yellow-500'} text-black py-2 rounded-full font-semibold`}
           >
             {signingUp ? 'Cadastrando...' : 'Criar conta'}
           </button>
         </div>
-
         {serverError && <p className="text-sm text-red-600 mt-3">{serverError}</p>}
         {serverMessage && <p className="text-sm text-green-600 mt-3">{serverMessage}</p>}
       </div>

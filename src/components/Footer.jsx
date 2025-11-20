@@ -13,8 +13,7 @@ export default function Footer() {
     };
 
     return (
-        <footer className="py-7 px-6 flex flex-col md:flex-row justify-center items-stretch gap-10 bg-gray-100">
-            {/* Localização */}
+        <footer className="py-7 px-6 flex flex-col md:flex-row justify-center items-stretch gap-10 bg-gradient-to-b to-yellow-100 flex">
             <div className="flex flex-col items-center bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border border-gray-200">
                 <div className="p-4 rounded-2xl bg-gradient-to-tr from-[#F6BE00] to-[#F6BE70]/70 shadow-md">
                     <img src={locationIcon} alt="Localização" className="w-14 h-14" />
@@ -23,8 +22,6 @@ export default function Footer() {
                     Rua Dr. José Pinto Rebelo Júnior, 91<br />Matinhos - PR, 83260-000
                 </p>
             </div>
-
-            {/* Telefone */}
             <div className="flex flex-col items-center bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border border-gray-200">
                 <div className="p-4 rounded-2xl bg-gradient-to-tr from-[#F6BE00] to-[#F6BE70]/70 shadow-md">
                     <img src={phoneIcon} alt="Telefone" className="w-14 h-14" />
@@ -36,8 +33,6 @@ export default function Footer() {
                     (41) 3452-8800
                 </button>
             </div>
-
-            {/* Email */}
             <div className="flex flex-col items-center bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border border-gray-200">
                 <div className="p-4 rounded-2xl bg-gradient-to-tr from-[#F6BE00] to-[#F6BE70]/70 shadow-md">
                     <img src={emailIcon} alt="Email" className="w-14 h-14" />

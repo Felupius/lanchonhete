@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { motion, AnimatePresence } from "framer-motion";
 import Header from "../components/Header";
 
 export default function Carrinho() {
     const [usuario, setUsuario] = useState(null);
     const [pedidos, setPedidos] = useState([]);
     const [carregando, setCarregando] = useState(true);
+    const [notificacao, setNotificacao] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -36,7 +38,11 @@ export default function Carrinho() {
         verificarLogin();
     }, [navigate]);
 
-    // Buscar pedidos do localStorage
+    function mostrarNotificacao(msg) {
+        setNotificacao(msg);
+        setTimeout(() => setNotificacao(null), 2500);
+    }
+
     const buscarPedidosLocais = (userId) => {
         try {
             const STORAGE_KEY = `produtos_local_${userId}`;
@@ -72,11 +78,10 @@ export default function Carrinho() {
     };
 
     const deletarPedido = (id_produto) => {
-        if (window.confirm("Deseja excluir este pedido?")) {
-            const novaLista = pedidos.filter((p) => p.id_produto !== id_produto);
-            setPedidos(novaLista);
-            salvarPedidosLocais(novaLista);
-        }
+        const novaLista = pedidos.filter((p) => p.id_produto !== id_produto);
+        setPedidos(novaLista);
+        salvarPedidosLocais(novaLista);
+        mostrarNotificacao("Produto removido do carrinho!");
     };
 
     const alterarQuantidade = (id_produto, delta) => {
@@ -89,13 +94,14 @@ export default function Carrinho() {
         });
         setPedidos(novaLista);
         salvarPedidosLocais(novaLista);
+        mostrarNotificacao("Quantidade atualizada!");
     };
 
     const total = pedidos.reduce((soma, item) => soma + item.preco * item.quantidade, 0);
 
     const finalizarCompra = async (id_lanchonete) => {
         if (pedidos.length === 0) {
-            alert("Carrinho vazio. Adicione produtos antes de finalizar.");
+            mostrarNotificacao("Carrinho vazio. Adicione produtos antes de finalizar.");
             return;
         }
 
@@ -122,10 +128,10 @@ export default function Carrinho() {
 
             setPedidos([]);
             localStorage.removeItem(`produtos_local_${usuario.id}`);
-            alert("Pedido finalizado!");
+            mostrarNotificacao("Pedido finalizado com sucesso!");
         } catch (error) {
             console.error("Erro ao finalizar pedido:", error);
-            alert("Não foi possível finalizar o pedido.");
+            mostrarNotificacao("Não foi possível finalizar o pedido.");
         }
     };
 
@@ -140,12 +146,10 @@ export default function Carrinho() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col">
+        <div className="min-h-screen bg-gradient-to-b from-blue-100 via-white flex flex-col">
             <Header usuario={usuario} handleSair={handleSair} />
-
             <div className="p-6 max-w-4xl mx-auto w-full">
                 <h1 className="text-2xl font-bold mb-6 text-gray-800">Meu Carrinho</h1>
-
                 {carregando ? (
                     <p className="text-gray-500">Carregando...</p>
                 ) : pedidos.length === 0 ? (
@@ -158,7 +162,6 @@ export default function Carrinho() {
                         <p className="text-right text-lg font-semibold text-gray-700">
                             Total: <span className="text-blue-700">R${total.toFixed(2)}</span>
                         </p>
-
                         {pedidos.map((item) => (
                             <div
                                 key={item.id_produto}
@@ -176,14 +179,14 @@ export default function Carrinho() {
                                     </p>
                                     <div className="flex items-center mt-2">
                                         <button
-                                            className="px-3 py-1 bg-yellow-400 rounded-md text-white font-bold hover:bg-yellow-500 transition-colors"
+                                            className="px-3 py-1 bg-[#F6BE00] rounded-md text-white font-bold hover:bg-yellow-500 transition-colors"
                                             onClick={() => alterarQuantidade(item.id_produto, -1)}
                                         >
                                             -
                                         </button>
                                         <span className="mx-3 font-medium">{item.quantidade}</span>
                                         <button
-                                            className="px-3 py-1 bg-yellow-400 rounded-md text-white font-bold hover:bg-yellow-500 transition-colors"
+                                            className="px-3 py-1 bg-[#F6BE00] rounded-md text-white font-bold hover:bg-yellow-500 transition-colors"
                                             onClick={() => alterarQuantidade(item.id_produto, 1)}
                                         >
                                             +
@@ -200,13 +203,11 @@ export default function Carrinho() {
                         ))}
                     </div>
                 )}
-
                 <div className="flex items-center justify-center my-8">
                     <div className="flex-1 h-px bg-gray-300"></div>
                     <span className="mx-4 font-semibold text-gray-600">Finalizar Compra</span>
                     <div className="flex-1 h-px bg-gray-300"></div>
                 </div>
-
                 <div className="flex flex-col sm:flex-row justify-evenly gap-4">
                     <button
                         className="bg-[#F6BE00] text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
@@ -222,6 +223,19 @@ export default function Carrinho() {
                     </button>
                 </div>
             </div>
+            <AnimatePresence>
+                {notificacao && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 40 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed bottom-6 right-6 bg-yellow-400 text-black font-semibold px-4 py-3 rounded-xl shadow-lg z-[999]"
+                    >
+                        {notificacao}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -147,7 +147,7 @@ export default function Perfil() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 via-white flex flex-col">
       <Header usuario={usuario} handleSair={handleSair} />
       <main className="flex flex-col items-center p-6">
         <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl p-6">

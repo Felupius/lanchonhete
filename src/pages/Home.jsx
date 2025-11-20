@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -11,9 +11,29 @@ export default function App() {
   const [produtos, setProdutos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [filtro, setFiltro] = useState("todos");
-  const [menuAberto, setMenuAberto] = useState(false);
-
   const [quantidadeCarrinho, setQuantidadeCarrinho] = useState(0);
+
+  const [notificacao, setNotificacao] = useState(null);
+
+  const handleSair = async () => {
+    if (!usuario) return;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUsuario(null);
+      setQuantidadeCarrinho(0);
+      navigate("/TelaCadastrar");
+    } catch (err) {
+      mostrarNotificacao("Erro ao sair da conta.");
+      console.error(err);
+    }
+  };
+
+
+  function mostrarNotificacao(msg) {
+    setNotificacao(msg);
+    setTimeout(() => setNotificacao(null), 2500);
+  }
 
   const categorias = ["todos", "doce", "salgado", "bebida"];
 
@@ -23,18 +43,13 @@ export default function App() {
       const user = authData.user;
 
       if (user) {
-        const { data: perfilData, error } = await supabase
+        const { data: perfilData } = await supabase
           .from("perfil")
           .select("nome")
           .eq("id_user", user.id)
           .single();
 
-        if (error) {
-          console.error("Erro ao buscar perfil:", error.message);
-          setUsuario({ ...user, nome: user.email });
-        } else {
-          setUsuario({ ...user, nome: perfilData.nome });
-        }
+        setUsuario({ ...user, nome: perfilData?.nome || user.email });
 
         const chaveUsuario = `produtos_local_${user.id}`;
         const lista = JSON.parse(localStorage.getItem(chaveUsuario)) || [];
@@ -53,40 +68,24 @@ export default function App() {
   async function carregarProdutos(tipoSelecionado) {
     setCarregando(true);
     let query = supabase.from("produto").select("*");
-    if (tipoSelecionado !== "todos") {
-      query = query.eq("tipo", tipoSelecionado);
-    }
-    const { data, error } = await query;
-    if (!error) setProdutos(data || []);
+    if (tipoSelecionado !== "todos") query = query.eq("tipo", tipoSelecionado);
+
+    const { data } = await query;
+    setProdutos(data || []);
     setCarregando(false);
-  }
-
-  const [saindo, setSaindo] = useState(false);
-
-  async function handleSair() {
-    setSaindo(true);
-    const { error } = await supabase.auth.signOut();
-    setSaindo(false);
-
-    if (!error) {
-      setUsuario(null);
-      setQuantidadeCarrinho(0);
-    }
   }
 
   const adicionarAoCarrinho = (produto) => {
     if (!usuario) {
-      alert("Você precisa estar logado para comprar produtos!");
+      mostrarNotificacao("Você precisa estar logado!");
       return;
     }
 
     const chaveUsuario = `produtos_local_${usuario.id}`;
-    const json = localStorage.getItem(chaveUsuario);
-    const listaAtual = json ? JSON.parse(json) : [];
+    const listaAtual = JSON.parse(localStorage.getItem(chaveUsuario)) || [];
 
-    const jaExiste = listaAtual.some(item => item[1] === produto.id_produto);
-    if (jaExiste) {
-      alert("Você já adicionou este produto. Altere a quantidade no carrinho.");
+    if (listaAtual.some(item => item[1] === produto.id_produto)) {
+      mostrarNotificacao("Esse produto já está no carrinho!");
       return;
     }
 
@@ -95,51 +94,47 @@ export default function App() {
       produto.id_produto,
       produto.preco,
       1,
-      produto.image
+      produto.image,
     ];
 
     const novaLista = [...listaAtual, produtoArray];
     localStorage.setItem(chaveUsuario, JSON.stringify(novaLista));
-
     setQuantidadeCarrinho(novaLista.length);
 
-    alert("Produto adicionado ao carrinho!");
+    mostrarNotificacao("Produto adicionado ao carrinho!");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-yellow-50 flex flex-col">
-      <Header usuario={usuario} handleSair={handleSair} quantidadeCarrinho={quantidadeCarrinho} />
+    <div className="min-h-screen bg-gradient-to-b from-blue-200 via-white flex flex-col">
+      <Header
+        usuario={usuario}
+        quantidadeCarrinho={quantidadeCarrinho}
+        handleSair={handleSair}
+      />
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="flex justify-center mt-8"
+        className="flex justify-center mt-10 px-4"
       >
-        <div className="bg-gradient-to-r from-[#80BBFF] to-[#004C99] text-white rounded-2xl p-6 shadow-xl text-center max-w-3xl transform hover:scale-105 transition-transform duration-300">
-          <h2 className="text-xl md:text-2xl font-bold tracking-wide">
-            Seja bem-vindo à lanchonete do Sesc e Senac
+        <div className="bg-gradient-to-r from-blue-500 to-blue-800 text-white rounded-3xl p-8 shadow-2xl text-center w-full max-w-3xl transform hover:scale-[1.03] transition-all duration-300">
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-wide drop-shadow-lg">
+            Bem-vindo à Lanchonete do Sesc e Senac!
           </h2>
+          <p className="text-white/90 mt-2 text-lg">
+            Escolha seus produtos e aproveite!
+          </p>
         </div>
       </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="flex justify-center mt-6"
-      >
-      </motion.div>
-
       <motion.h1
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-        className="text-3xl md:text-4xl font-bold text-center mt-8 text-gray-800"
+        transition={{ duration: 1 }}
+        className="text-4xl md:text-5xl font-extrabold text-center mt-10 text-gray-900 drop-shadow-sm"
       >
-        MENU DE PRODUTOS
+        Menu de Produtos
       </motion.h1>
-
-      <div className="flex justify-center flex-wrap gap-3 mt-6 overflow-x-auto px-4 scrollbar-hide">
+      <div className="flex justify-center flex-wrap gap-3 mt-6 px-4">
         {categorias.map((tipo) => (
           <button
             key={tipo}
@@ -147,55 +142,65 @@ export default function App() {
               setFiltro(tipo);
               carregarProdutos(tipo);
             }}
-            className={`px-5 py-2 border rounded-full font-bold transition-all whitespace-nowrap
-            ${filtro === tipo
-              ? "bg-yellow-400 text-white border-yellow-600"
-              : "bg-white text-black border-yellow-400 hover:bg-yellow-100"
-            }`}
+            className={`
+              px-5 py-2 text-sm md:text-md rounded-full font-bold transition-all shadow-md
+              ${filtro === tipo
+                ? "bg-yellow-500 text-white shadow-lg scale-105"
+                : "bg-white text-gray-700 hover:bg-yellow-100 hover:shadow-lg"}
+            `}
           >
             {tipo.toUpperCase()}
           </button>
         ))}
       </div>
-
       {!carregando && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6 mt-8 pb-20 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 px-6 mt-10 pb-24 max-w-7xl mx-auto">
           {produtos.map((p, index) => (
             <motion.div
               key={p.id_produto}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="bg-[#F6BE00] rounded-3xl shadow-xl p-6 flex flex-col items-center w-full h-[360px] justify-between hover:-translate-y-2 transform transition-all duration-300"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center relative hover:-translate-y-2 hover:shadow-2xl transform transition-all duration-300 border border-yellow-300/40"
             >
-              <img
-                src={p.image}
-                className="w-32 h-32 object-cover rounded-xl mb-3 shadow-md"
-              />
-              <p className="text-white text-lg md:text-xl font-bold text-center">
+              <div className="w-32 h-32 bg-gray-100 rounded-2xl overflow-hidden shadow-md mb-4">
+                <img src={p.image} className="w-full h-full object-cover" />
+              </div>
+              <p className="text-gray-900 text-lg font-bold text-center">
                 {p.nome_produto}
               </p>
-              <p className="text-[#002D85] text-xl md:text-2xl font-bold">
+              <p className="text-blue-800 text-2xl font-extrabold my-2">
                 R$ {Number(p.preco).toFixed(2)}
               </p>
-
-              <button
-                onClick={() => adicionarAoCarrinho(p)}
-                className="bg-white rounded-full py-2 px-6 font-bold text-black shadow-md w-full hover:bg-yellow-100 transition-colors"
-              >
-                Comprar
-              </button>
-
-              <button className="bg-white rounded-full py-2 px-6 font-bold text-black shadow-md w-full hover:bg-yellow-100 transition-colors">
-                Descrição
-              </button>
+              <div className="flex flex-col w-full mt-2 gap-2">
+                <button
+                  onClick={() => adicionarAoCarrinho(p)}
+                  className="bg-gradient-to-r from-yellow-400 to-[#F6BE00] text-black font-bold py-2 rounded-full shadow-md hover:shadow-xl active:scale-95 transition-all"
+                >
+                  🛒 Comprar
+                </button>
+                <button className="bg-white border border-gray-300 text-gray-700 font-bold py-2 rounded-full shadow-sm hover:bg-gray-100 active:scale-95 transition-all">
+                  ℹ️ Descrição
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
       )}
-
+      <AnimatePresence>
+        {notificacao && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-6 right-6 bg-[#F6BE00] text-black font-semibold px-4 py-3 rounded-xl shadow-lg z-[999]"
+          >
+            {notificacao}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <Footer />
-
     </div>
   );
 }
