@@ -117,7 +117,7 @@ export default function App() {
         transition={{ duration: 0.8 }}
         className="flex justify-center mt-10 px-4"
       >
-        <div className="bg-gradient-to-r from-blue-500 to-blue-800 text-white rounded-3xl p-8 shadow-2xl text-center w-full max-w-3xl transform hover:scale-[1.03] transition-all duration-300">
+        <div className="bg-gradient-to-r from-[#003A73] to-[#005FBA] text-white rounded-3xl p-8 shadow-2xl text-center w-full max-w-3xl transform hover:scale-[1.03] transition-all duration-300">
           <h2 className="text-2xl md:text-3xl font-extrabold tracking-wide drop-shadow-lg">
             Bem-vindo à Lanchonete do Sesc e Senac!
           </h2>
@@ -169,7 +169,7 @@ export default function App() {
               <p className="text-gray-900 text-lg font-bold text-center">
                 {p.nome_produto}
               </p>
-              <p className="text-blue-800 text-2xl font-extrabold my-2">
+              <p className="text-[#003A73] text-2xl font-extrabold my-2">
                 R$ {Number(p.preco).toFixed(2)}
               </p>
               <div className="flex flex-col w-full mt-2 gap-2">

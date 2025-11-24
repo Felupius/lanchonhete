@@ -63,6 +63,13 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
                   <span className="text-lg">🏠</span> Home
                 </Link>
                 <Link
+                  to="/Pedidos"
+                  onClick={() => setMenuAberto(false)}
+                  className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-yellow-100 transition-all"
+                >
+                  <span className="text-lg">🙋‍♂️</span> Pedidos
+                </Link>
+                <Link
                   to="/Perfil"
                   onClick={() => setMenuAberto(false)}
                   className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-yellow-100 transition-all"
