@@ -15,6 +15,8 @@ export default function App() {
 
   const [notificacao, setNotificacao] = useState(null);
 
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+
   const handleSair = async () => {
     if (!usuario) return;
     try {
@@ -28,7 +30,6 @@ export default function App() {
       console.error(err);
     }
   };
-
 
   function mostrarNotificacao(msg) {
     setNotificacao(msg);
@@ -179,7 +180,11 @@ export default function App() {
                 >
                   🛒 Comprar
                 </button>
-                <button className="bg-white border border-gray-300 text-gray-700 font-bold py-2 rounded-full shadow-sm hover:bg-gray-100 active:scale-95 transition-all">
+
+                <button
+                  onClick={() => setProdutoSelecionado(p)}
+                  className="bg-white border border-gray-300 text-gray-700 font-bold py-2 rounded-full shadow-sm hover:bg-gray-100 active:scale-95 transition-all"
+                >
                   ℹ️ Descrição
                 </button>
               </div>
@@ -187,6 +192,49 @@ export default function App() {
           ))}
         </div>
       )}
+      <AnimatePresence>
+        {produtoSelecionado && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[999]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+            >
+              <img
+                src={produtoSelecionado.image}
+                className="w-full h-52 object-cover rounded-xl shadow-md mb-4"
+              />
+              <h2 className="text-gray-900 text-lg font-bold">
+                {produtoSelecionado.nome_produto}
+              </h2>
+              <p className="text-[#003A73] text-2xl font-extrabold mb-4">
+                R$ {Number(produtoSelecionado.preco).toFixed(2)}
+              </p>
+              <p className="text-gray-700 whitespace-pre-line mb-4">
+                {produtoSelecionado.descricao}
+              </p>
+              <button
+                onClick={() => adicionarAoCarrinho(produtoSelecionado)}
+                className="w-full bg-yellow-500 text-black font-bold py-2 rounded-full shadow-md hover:shadow-lg mb-3"
+              >
+                🛒 Comprar
+              </button>
+              <button
+                onClick={() => setProdutoSelecionado(null)}
+                className="w-full bg-gray-300 text-black font-bold py-2 rounded-full shadow-md hover:bg-gray-400"
+              >
+                Fechar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {notificacao && (
           <motion.div
