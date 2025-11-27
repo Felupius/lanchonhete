@@ -97,7 +97,6 @@ export default function AdminUsuarios() {
     }
     async function atualizarEscolaUsuario(id_user, novaEscola) {
         try {
-            // Garante que seja número 1 ou 2
             const escolaNumero = Number(novaEscola);
             if (![1, 2].includes(escolaNumero)) {
                 mostrarNotificacao("Valor de escola inválido!");
@@ -111,7 +110,6 @@ export default function AdminUsuarios() {
 
             if (error) throw error;
 
-            // Atualiza na lista local
             setListaUsuarios(prev =>
                 prev.map(u => (u.id_user === id_user ? { ...u, id_escola: escolaNumero } : u))
             );
@@ -220,7 +218,6 @@ export default function AdminUsuarios() {
                                 usuariosFiltrados.map(u => (
                                     <tr key={u.id_user} className="hover:bg-blue-50 transition">
 
-                                        {/* FOTO */}
                                         <td className="px-6 py-3">
                                             <img
                                                 src={u.foto || "https://via.placeholder.com/50"}
@@ -229,10 +226,8 @@ export default function AdminUsuarios() {
                                             />
                                         </td>
 
-                                        {/* NOME */}
                                         <td className="px-6 py-3 font-semibold text-gray-700">{u.nome}</td>
 
-                                        {/* ID ESCOLA → TEXTO */}
                                         <td className="px-6 py-3">
                                             <select
                                                 value={u.id_escola}
@@ -244,11 +239,8 @@ export default function AdminUsuarios() {
                                             </select>
                                         </td>
 
-
-                                        {/* EMAIL */}
                                         <td className="px-6 py-3 text-gray-600">{u.email}</td>
 
-                                        {/* BOTÃO VER PEDIDOS */}
                                         <td className="px-6 py-3">
                                             <button
                                                 onClick={() => verPedidos(u.id_user)}
