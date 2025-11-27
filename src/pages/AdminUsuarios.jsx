@@ -10,6 +10,8 @@ export default function AdminUsuarios() {
     const [listaUsuarios, setListaUsuarios] = useState([]);
     const [filtro, setFiltro] = useState("");
     const [loading, setLoading] = useState(true);
+    const [escolaTemporaria, setEscolaTemporaria] = useState({});
+
 
     const [pedidos, setPedidos] = useState([]);
     const [usuarioSelecionado, setUsuarioSelecionado] = useState(null);
@@ -93,6 +95,33 @@ export default function AdminUsuarios() {
             setLoadingPedidos(false);
         }
     }
+    async function atualizarEscolaUsuario(id_user, novaEscola) {
+        try {
+            // Garante que seja número 1 ou 2
+            const escolaNumero = Number(novaEscola);
+            if (![1, 2].includes(escolaNumero)) {
+                mostrarNotificacao("Valor de escola inválido!");
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from("perfil")
+                .update({ id_escola: escolaNumero })
+                .eq("id_user", id_user);
+
+            if (error) throw error;
+
+            // Atualiza na lista local
+            setListaUsuarios(prev =>
+                prev.map(u => (u.id_user === id_user ? { ...u, id_escola: escolaNumero } : u))
+            );
+
+            mostrarNotificacao("Escola atualizada com sucesso!");
+        } catch (err) {
+            console.error(err);
+            mostrarNotificacao("Erro ao atualizar escola!");
+        }
+    }
 
     async function atualizarStatusPedido(id_pedido, novoStatus) {
         try {
@@ -167,10 +196,10 @@ export default function AdminUsuarios() {
                     <table className="w-full">
                         <thead className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                             <tr>
+                                <th className="px-6 py-3 text-left">Foto</th>
                                 <th className="px-6 py-3 text-left">Nome</th>
+                                <th className="px-6 py-3 text-left">Escola</th>
                                 <th className="px-6 py-3 text-left">Email</th>
-                                <th className="px-6 py-3 text-left">Telefone</th>
-                                <th className="px-6 py-3 text-left">Cidade</th>
                                 <th className="px-6 py-3 text-left">Ações</th>
                             </tr>
                         </thead>
@@ -189,14 +218,37 @@ export default function AdminUsuarios() {
                                 </tr>
                             ) : (
                                 usuariosFiltrados.map(u => (
-                                    <tr
-                                        key={u.id_user}
-                                        className="hover:bg-blue-50 transition"
-                                    >
+                                    <tr key={u.id_user} className="hover:bg-blue-50 transition">
+
+                                        {/* FOTO */}
+                                        <td className="px-6 py-3">
+                                            <img
+                                                src={u.foto || "https://via.placeholder.com/50"}
+                                                alt="Foto do usuário"
+                                                className="w-12 h-12 rounded-full object-cover shadow"
+                                            />
+                                        </td>
+
+                                        {/* NOME */}
                                         <td className="px-6 py-3 font-semibold text-gray-700">{u.nome}</td>
+
+                                        {/* ID ESCOLA → TEXTO */}
+                                        <td className="px-6 py-3">
+                                            <select
+                                                value={u.id_escola}
+                                                onChange={(e) => atualizarEscolaUsuario(u.id_user, e.target.value)}
+                                                className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                            >
+                                                <option value={1}>Sesc_Caiobá</option>
+                                                <option value={2}>Sesc_Centro</option>
+                                            </select>
+                                        </td>
+
+
+                                        {/* EMAIL */}
                                         <td className="px-6 py-3 text-gray-600">{u.email}</td>
-                                        <td className="px-6 py-3 text-gray-600">{u.telefone || "—"}</td>
-                                        <td className="px-6 py-3 text-gray-600">{u.cidade || "—"}</td>
+
+                                        {/* BOTÃO VER PEDIDOS */}
                                         <td className="px-6 py-3">
                                             <button
                                                 onClick={() => verPedidos(u.id_user)}
@@ -209,6 +261,7 @@ export default function AdminUsuarios() {
                                 ))
                             )}
                         </tbody>
+
                     </table>
                 </div>
 
