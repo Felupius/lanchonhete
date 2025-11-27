@@ -11,30 +11,33 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
     <header className="bg-gradient-to-r from-[#003A73] to-[#005FBA] px-6 py-4 flex items-center justify-between shadow-xl border-b border-white/10 sticky top-0 z-50 relative backdrop-blur-md">
       <div className="flex items-center gap-4">
         <Link to="/" className="group">
-          <img 
+          <img
             src="./src/assets/sesc.png"
             className="h-10 transition-transform duration-300 group-hover:scale-110 drop-shadow-lg"
           />
         </Link>
         <Link to="/" className="group">
-          <img 
+          <img
             src="./src/assets/senac.png"
             className="h-10 transition-transform duration-300 group-hover:scale-110 drop-shadow-lg"
           />
         </Link>
       </div>
+
       <div className="relative">
         {usuario ? (
           <div className="flex items-center gap-4">
             <p className="text-white font-semibold tracking-wide drop-shadow-md">
               Olá, <span className="font-bold">{usuario.nome}</span>
             </p>
+
             <button
               onClick={() => setMenuAberto(!menuAberto)}
               disabled={saindo}
               className="relative bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-xl transition-all active:scale-95"
             >
               {saindo ? "Saindo..." : "Menu"}
+
               {quantidadeCarrinho > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
@@ -46,6 +49,7 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
                 </motion.span>
               )}
             </button>
+
             {menuAberto && (
               <motion.div
                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -55,6 +59,20 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
                 className="absolute top-0.25 right-0 mt-12 w-60 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-yellow-400/40 overflow-hidden z-50"
               >
                 <div className="absolute -top-2 right-5 w-4 h-4 bg-white/95 rotate-45 border-l border-t border-yellow-400/40"></div>
+
+                {usuario?.adm === true && (
+                  <>
+                    <hr className="border-yellow-300/40" />
+                    <Link
+                      to="/AdminUsuarios"
+                      onClick={() => setMenuAberto(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-yellow-100 transition-all"
+                    >
+                      <span className="text-lg">⚙️</span> Administração
+                    </Link>
+                  </>
+                )}
+
                 <Link
                   to="/"
                   onClick={() => setMenuAberto(false)}
@@ -62,6 +80,7 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
                 >
                   <span className="text-lg">🏠</span> Home
                 </Link>
+
                 <Link
                   to="/Pedidos"
                   onClick={() => setMenuAberto(false)}
@@ -69,6 +88,7 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
                 >
                   <span className="text-lg">🙋‍♂️</span> Pedidos
                 </Link>
+
                 <Link
                   to="/Perfil"
                   onClick={() => setMenuAberto(false)}
@@ -76,7 +96,9 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
                 >
                   <span className="text-lg">👤</span> Perfil
                 </Link>
+
                 <hr className="border-yellow-300/40" />
+
                 <Link
                   to="/Notificacao"
                   onClick={() => setMenuAberto(false)}
@@ -89,7 +111,9 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
                     </span>
                   )}
                 </Link>
+
                 <hr className="border-yellow-300/40" />
+
                 <button
                   onClick={() => {
                     handleSair();

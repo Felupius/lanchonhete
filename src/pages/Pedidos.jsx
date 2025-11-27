@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import Header from "../components/Header";
 
@@ -8,41 +8,56 @@ export default function Pedidos() {
     const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState(null);
 
+    // ============================
+    //  CARREGA PERFIL + ADM
+    // ============================
     async function loadProfile() {
         const {
             data: { user },
         } = await supabase.auth.getUser();
+
         if (!user) return null;
 
         let profile = null;
+
+        // Tenta carregar da tabela "profiles"
         try {
             const { data, error } = await supabase
                 .from("profiles")
-                .select("*")
+                .select("full_name, adm")
                 .eq("id", user.id)
                 .single();
-            if (!error) profile = data;
-        } catch { }
 
+            if (!error) profile = data;
+        } catch {}
+
+        // Se não achar, tenta da tabela "perfil"
         if (!profile) {
             try {
                 const { data, error } = await supabase
                     .from("perfil")
-                    .select("*")
+                    .select("nome, adm")
                     .eq("id_user", user.id)
                     .single();
                 if (!error) profile = data;
-            } catch { }
+            } catch {}
         }
 
         return {
             id: user.id,
             email: user.email,
             nome:
-                profile?.full_name || profile?.nome || user.user_metadata?.nome || "",
+                profile?.full_name ||
+                profile?.nome ||
+                user.user_metadata?.nome ||
+                "",
+            adm: profile?.adm || false, // <-- 🔥 AQUI ESTÁ O ADM
         };
     }
 
+    // ============================
+    //  BUSCAR PEDIDOS
+    // ============================
     async function buscarPedidos() {
         setLoading(true);
 
@@ -82,6 +97,7 @@ export default function Pedidos() {
                         `
                     )
                     .eq("id_pedido", pedido.id_pedido);
+
                 return { ...pedido, itens };
             })
         );
@@ -99,11 +115,17 @@ export default function Pedidos() {
         window.location.href = "/TelaCadastrar";
     }
 
+    // ============================
+    //  RENDER
+    // ============================
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-100 via-white pb-10">
             <Header usuario={usuario} handleSair={handleSair} />
+
             <div className="max-w-3xl mx-auto px-4 mt-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">Meus Pedidos</h1>
+                <h1 className="text-2xl font-bold text-gray-800 mb-6">
+                    Meus Pedidos
+                </h1>
 
                 {loading ? (
                     <div className="flex justify-center items-center py-20">
@@ -111,7 +133,9 @@ export default function Pedidos() {
                     </div>
                 ) : pedidos.length === 0 ? (
                     <div className="text-center text-gray-500 py-20">
-                        <p className="text-lg font-semibold">Você ainda não fez nenhum pedido</p>
+                        <p className="text-lg font-semibold">
+                            Você ainda não fez nenhum pedido
+                        </p>
                     </div>
                 ) : (
                     pedidos.map((item) => (
@@ -131,10 +155,13 @@ export default function Pedidos() {
                                         Total: R$ {item.preco_total}
                                     </p>
                                 </div>
+
                                 <button
                                     onClick={() =>
                                         setExpanded(
-                                            expanded === item.id_pedido ? null : item.id_pedido
+                                            expanded === item.id_pedido
+                                                ? null
+                                                : item.id_pedido
                                         )
                                     }
                                 >

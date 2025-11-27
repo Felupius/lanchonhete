@@ -46,11 +46,15 @@ export default function App() {
       if (user) {
         const { data: perfilData } = await supabase
           .from("perfil")
-          .select("nome")
+          .select("nome, adm")
           .eq("id_user", user.id)
           .single();
 
-        setUsuario({ ...user, nome: perfilData?.nome || user.email });
+        setUsuario({
+          ...user,
+          nome: perfilData?.nome || user.email,
+          adm: perfilData?.adm || false,
+        });
 
         const chaveUsuario = `produtos_local_${user.id}`;
         const lista = JSON.parse(localStorage.getItem(chaveUsuario)) || [];
