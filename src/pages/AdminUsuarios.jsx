@@ -98,12 +98,13 @@ export default function AdminUsuarios() {
     async function atualizarEscolaUsuario(id_user, novaEscola) {
         try {
             const escolaNumero = Number(novaEscola);
+
             if (![1, 2].includes(escolaNumero)) {
                 mostrarNotificacao("Valor de escola inválido!");
                 return;
             }
 
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from("perfil")
                 .update({ id_escola: escolaNumero })
                 .eq("id_user", id_user);
@@ -111,7 +112,9 @@ export default function AdminUsuarios() {
             if (error) throw error;
 
             setListaUsuarios(prev =>
-                prev.map(u => (u.id_user === id_user ? { ...u, id_escola: escolaNumero } : u))
+                prev.map(u =>
+                    u.id_user === id_user ? { ...u, id_escola: escolaNumero } : u
+                )
             );
 
             mostrarNotificacao("Escola atualizada com sucesso!");
@@ -120,6 +123,7 @@ export default function AdminUsuarios() {
             mostrarNotificacao("Erro ao atualizar escola!");
         }
     }
+
 
     async function atualizarStatusPedido(id_pedido, novoStatus) {
         try {
@@ -217,15 +221,19 @@ export default function AdminUsuarios() {
                             ) : (
                                 usuariosFiltrados.map(u => (
                                     <tr key={u.id_user} className="hover:bg-blue-50 transition">
-
                                         <td className="px-6 py-3">
-                                            <img
-                                                src={u.foto || "https://via.placeholder.com/50"}
-                                                alt="Foto do usuário"
-                                                className="w-12 h-12 rounded-full object-cover shadow"
-                                            />
+                                            {u.foto ? (
+                                                <img
+                                                    src={u.foto}
+                                                    alt="Foto do usuário"
+                                                    className="w-12 h-12 rounded-full object-cover shadow"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 font-semibold shadow">
+                                                    {u.nome ? u.nome.split(" ").map(n => n[0]).join("") : "Sem foto"}
+                                                </div>
+                                            )}
                                         </td>
-
                                         <td className="px-6 py-3 font-semibold text-gray-700">{u.nome}</td>
 
                                         <td className="px-6 py-3">
