@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-
+import sesc from "../assets/sesc.png";
 export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
 
   const [menuAberto, setMenuAberto] = useState(false);
@@ -12,7 +12,7 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
       <div className="flex items-center gap-4">
         <Link to="/" className="group">
           <img
-            src="./src/assets/sesc.png"
+            src= {sesc}
             className="h-10 transition-transform duration-300 group-hover:scale-110 drop-shadow-lg"
           />
         </Link>
