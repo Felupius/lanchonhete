@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import sescsenac from "../assets/sescsenac.png"
 
 export default function Login() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[#004C99]">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm text-center">
         <img
-          src="./src/assets/sescsenac.png"
+          src={sescsenac}
           alt="Sesc Senac"
           className="mx-auto mb-6"
         />
