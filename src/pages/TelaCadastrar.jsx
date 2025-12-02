@@ -1,13 +1,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-
+import sescsenac from "../assets/sescsenac.png"
 export default function TelaInicial() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#004C99] relative overflow-hidden">
       <div className="relative z-10 text-center flex flex-col items-center">
         <div className="bg-white rounded-lg px-6 py-3 shadow-md mb-6">
           <img
-            src="./src/assets/sescsenac.png"
+            src={sescsenac}
             alt="Logo Sesc Senac"
             className="h-40"
           />
