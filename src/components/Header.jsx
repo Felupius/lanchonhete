@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import sesc from "../assets/sesc.png";
+import senac from "../assets/senac.png";
 export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
 
   const [menuAberto, setMenuAberto] = useState(false);
@@ -18,7 +19,7 @@ export default function Header({ usuario, handleSair, quantidadeCarrinho }) {
         </Link>
         <Link to="/" className="group">
           <img
-            src="./src/assets/senac.png"
+            src={senac}
             className="h-10 transition-transform duration-300 group-hover:scale-110 drop-shadow-lg"
           />
         </Link>
